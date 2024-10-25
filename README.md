@@ -231,3 +231,8 @@ sudo pacman -S --noconfirm --needed gcc make git ripgrep fd unzip neovim
 ```
 </details>
 
+
+# To read more about : 
+- How to use telescope : exclude, include etc...
+
+
