@@ -91,7 +91,12 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
+
+-- nvim-tree
+-- disable netrw at the very start of your init.lua
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -109,6 +114,10 @@ vim.opt.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
+
+-- nvim-tree
+-- optionally enable 24-bit colour
+vim.opt.termguicolors = true
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -165,6 +174,17 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+vim.keymap.set('n', 'gn', '<cmd>tabnew<cr>', { desc = 'Open [N] tab' })
+
+function OpenFolderInNewTab(folder_path)
+  -- Open a new tab
+  vim.cmd 'tabnew'
+
+  -- Open the folder in the new tab using Neovim's file explorer (netrw)
+  vim.cmd('edit ' .. folder_path)
+end
+--vim.api.nvim_set_keymap('n', '<leader>o', ':lua OpenFolderInNewTab("~/Documents")<CR>', { noremap = true, silent = true })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -253,6 +273,62 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+    config = function()
+      require('gitsigns').setup {
+        on_attach = function(bufnr)
+          local gitsigns = require 'gitsigns'
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation
+          map('n', ']c', function()
+            if vim.wo.diff then
+              vim.cmd.normal { ']c', bang = true }
+            else
+              gitsigns.nav_hunk 'next'
+            end
+          end)
+
+          map('n', '[c', function()
+            if vim.wo.diff then
+              vim.cmd.normal { '[c', bang = true }
+            else
+              gitsigns.nav_hunk 'prev'
+            end
+          end)
+
+          -- Actions
+          map('n', '<leader>hs', gitsigns.stage_hunk, { desc = '[s]tage hunk' })
+          map('n', '<leader>hr', gitsigns.reset_hunk, { desc = '[r]eset hunk' })
+          map('v', '<leader>hs', function()
+            gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v', { desc = '???' } }
+          end)
+          map('v', '<leader>hr', function()
+            gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v', { desc = '???' } }
+          end)
+          map('n', '<leader>hS', gitsigns.stage_buffer, { desc = '[S]tage Buffer' })
+          map('n', '<leader>hu', gitsigns.undo_stage_hunk, { desc = '[u]ndo Stage Hunk' })
+          map('n', '<leader>hR', gitsigns.reset_buffer, { desc = '[R]eset buffer' })
+          map('n', '<leader>hp', gitsigns.preview_hunk, { desc = '[P]review hunk' })
+          map('n', '<leader>hb', function()
+            gitsigns.blame_line { full = true }
+          end)
+          map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[t]oggle current line [b]lame' })
+          map('n', '<leader>hd', gitsigns.diffthis, { desc = '[d]iff this' })
+          map('n', '<leader>hD', function()
+            gitsigns.diffthis '~'
+          end, { desc = '???' })
+          map('n', '<leader>td', gitsigns.toggle_deleted, { desc = '[t]oggle [d]eleted' })
+
+          -- Text object
+          map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = '???' })
+        end,
+      }
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -411,7 +487,11 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      -- Replace by opening a terminal (toggleterm)
+      --vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+      -- Show hidden files
+      --builtin.find_files(
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -518,6 +598,9 @@ require('lazy').setup({
 
           -- Find references for the word under your cursor.
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+
+          --- Switch between header and source
+          map('<A-o>', '<cmd>ClangdSwitchSourceHeader<cr>', 'Switch between Header and Source')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
@@ -942,7 +1025,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -970,5 +1053,77 @@ require('lazy').setup({
   },
 })
 
+----------------------------------------------------------------
+--NOTE: Enable the possibility to maximize and minimize a split
+----------------------------------------------------------------
+
+-- Table to store original split dimensions
+local original_size = { width = nil, height = nil, nvim_tree_open = false, window_id = nil }
+
+-- Check if the current window is the Nvim Tree drawer
+local function is_nvim_tree_focused()
+  local bufname = vim.api.nvim_buf_get_name(0) -- Get the current buffer name
+  return bufname:match 'NvimTree' ~= nil
+end
+
+-- Function to toggle maximize/restore split
+function toggle_split_size()
+  if is_nvim_tree_focused() then
+    return
+  end
+
+  local split_width = vim.api.nvim_win_get_width(0)
+  local split_height = vim.api.nvim_win_get_height(0)
+  local window_width = vim.o.columns
+  local window_height = vim.o.lines - vim.o.cmdheight
+
+  -- Check if Nvim Tree is open
+  local nvim_tree_view = require 'nvim-tree.view'
+
+  -- Need this -10 because split size is never equal to window size
+  if split_width < window_width - 10 or split_height < window_height - 10 then
+    -- Save current split size if it's not already saved
+    if not original_size.width or not original_size.height then
+      original_size.width = split_width
+      original_size.height = split_height
+    end
+
+    original_size.nvim_tree_open = nvim_tree_view.is_visible()
+    original_size.window_id = vim.api.nvim_get_current_win()
+
+    if original_size.nvim_tree_open then
+      vim.cmd 'NvimTreeClose'
+    end
+    -- Maximize the split
+    vim.cmd 'resize | vertical resize'
+  else
+    if original_size.width and original_size.height then
+      -- Restore to original size if saved
+      vim.api.nvim_win_set_width(0, original_size.width)
+      vim.api.nvim_win_set_height(0, original_size.height)
+
+      -- If nvim_tree was open, open it again
+      if original_size.nvim_tree_open then
+        vim.cmd 'NvimTreeOpen'
+      end
+
+      -- Refocus on the originally active window
+      if original_size.window_id then
+        print('window_id', original_size.window_id)
+        vim.api.nvim_set_current_win(original_size.window_id)
+      end
+
+      -- Clear saved dimensions
+      original_size.width = nil
+      original_size.height = nil
+      original_size.window_id = nil
+    end
+  end
+end
+
+vim.keymap.set('n', '<space>x', function()
+  toggle_split_size()
+end, { desc = 'Toggle Maximizing a split' })
+
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+--v vim: ts=2 sts=2 sw=2 e:
