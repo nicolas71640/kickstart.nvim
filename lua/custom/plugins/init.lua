@@ -24,7 +24,29 @@ return {
   },
 
   --  NOTE: To have the :G command
-  { 'tpope/vim-fugitive' },
+  {
+    'tpope/vim-fugitive',
+    config = function()
+      vim.api.nvim_set_keymap('n', '<leader>g', ':lua ToggleFugitive()<CR>', { noremap = true, silent = true })
+
+      function ToggleFugitive()
+        -- Check if there is a window with a Fugitive buffer
+        local is_fugitive_open = false
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          local bufname = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win))
+          if bufname:match 'fugitive://' then
+            is_fugitive_open = true
+            vim.api.nvim_win_close(win, true) -- Close the Fugitive window
+            break
+          end
+        end
+
+        if not is_fugitive_open then
+          vim.cmd 'G' -- Open Fugitive if it's not already open
+        end
+      end
+    end,
+  },
 
   --  NOTE: To have a nice terminal in nvim
   {
@@ -96,6 +118,7 @@ return {
       map('n', '<A-,>', '<Cmd>BufferPrevious<CR>', opts)
       map('n', '<A-;>', '<Cmd>BufferNext<CR>', opts)
       map('n', '<A-c>', '<Cmd>BufferClose<CR>', opts)
+      map('n', '<A-C>', '<Cmd>BufferCloseAllButCurrent<CR>', opts)
     end,
     opts = {
       -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
@@ -104,5 +127,8 @@ return {
       -- …etc.
     },
     version = '^1.0.0', -- optional: only update when a new 1.x version is released
+  },
+  {
+    'mhinz/vim-startify',
   },
 }
