@@ -1125,5 +1125,33 @@ vim.keymap.set('n', '<space>x', function()
   toggle_split_size()
 end, { desc = 'Toggle Maximizing a split' })
 
+----------------------------------------------------------------
+--NOTE: Open quickly any usefull folder in another tab
+----------------------------------------------------------------
+local function open_workspace(root_folder)
+  -- Set the Nvim Tree root folder
+  require('nvim-tree.api').tree.change_root(root_folder)
+
+  vim.cmd 'NvimTreeOpen'
+end
+
+vim.keymap.set('n', '<space>wk', function()
+  open_workspace '~/wdc_workspace/src/KickCAT/'
+end, { desc = 'Open [k]ickcat' })
+vim.keymap.set('n', '<space>ww', function()
+  open_workspace '~/wdc_workspace/src/wandercode/'
+end, { desc = 'Open [w]andercode' })
+vim.keymap.set('n', '<space>wn', function()
+  open_workspace '~/wdc_workspace/src/nuttxspace/'
+end, { desc = 'Open [n]uttxspace' })
+vim.keymap.set('n', '<space>wc', function()
+  open_workspace '~/wdc_workspace/src/conan/'
+end, { desc = 'Open [c]onan' })
+vim.keymap.set('n', '<space>wb', function()
+  open_workspace '~/bolt_workspace/src/wandercode/'
+end, { desc = 'Open [b]olt' })
+
+vim.keymap.set('v', '<leader>y', '"+y')
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 --v vim: ts=2 sts=2 sw=2 e:
