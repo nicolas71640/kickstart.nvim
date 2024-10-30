@@ -12,7 +12,17 @@ return {
       },
     },
     config = function()
-      require('nvim-tree').setup()
+      require('nvim-tree').setup {
+        sync_root_with_cwd = true,
+        respect_buf_cwd = true,
+        update_focused_file = {
+          enable = true,
+          update_root = true,
+        },
+        filters = {
+          dotfiles = false,
+        },
+      }
 
       local api = require 'nvim-tree.api'
 
@@ -30,6 +40,8 @@ return {
     'tpope/vim-fugitive',
     config = function()
       vim.api.nvim_set_keymap('n', '<leader>g', ':lua ToggleFugitive()<CR>', { noremap = true, silent = true })
+      vim.api.nvim_set_keymap('n', '<leader>dg', ':diffget<CR>', { desc = '[d]iff [g]et' })
+      vim.api.nvim_set_keymap('n', '<leader>dp', ':diffput<CR>', { desc = '[d]iff [p]et' })
 
       function ToggleFugitive()
         -- Check if there is a window with a Fugitive buffer
@@ -131,9 +143,6 @@ return {
     version = '^1.0.0', -- optional: only update when a new 1.x version is released
   },
   {
-    'mhinz/vim-startify',
-  },
-  {
     'yetone/avante.nvim',
     event = 'VeryLazy',
     lazy = false,
@@ -178,5 +187,48 @@ return {
         ft = { 'markdown', 'Avante' },
       },
     },
+  },
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    init = function()
+      require('lualine').setup()
+    end,
+  },
+  -- For view in hexadecimal
+  {
+    'RaafatTurki/hex.nvim',
+    init = function()
+      require('hex').setup()
+    end,
+  },
+  -- Project manager
+  {
+    'ahmedkhalf/project.nvim',
+    config = function()
+      require('project_nvim').setup {
+        detection_methods = { 'pattern' }, -- Use patterns to detect project roots
+        patterns = { '.git', 'Makefile', 'package.json', 'pyproject.toml' }, -- Root files to detect
+      }
+
+      require('telescope').load_extension 'projects'
+
+      vim.keymap.set('n', '<leader>sp', '<cmd>Telescope projects<CR>', { desc = '[S]earch for [P]rojects' })
+    end,
+  },
+  {
+    'andythigpen/nvim-coverage',
+    opts = {
+      lcov_file = 'build_pc/coverage_lcov.total',
+    },
+    requires = 'nvim-lua/plenary.nvim',
+    -- Optional: needed for PHP when using the cobertura parser
+    rocks = { 'lua-xmlreader' },
+    config = function()
+      local lcov_file = 'build_pc/coverage_lcov.total'
+      require('coverage').setup {
+        vim.keymap.set('n', '<leader>cl', '<cmd>CoverageLoadLcov ' .. lcov_file .. '<CR><cmd>CoverageShow <CR>', { desc = '[C]overage [l]cov ' }),
+      }
+    end,
   },
 }
