@@ -476,11 +476,27 @@ require('lazy').setup({
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
 
+      local function telescope_find_files_in_tree_directory()
+        -- Get the path of the current directory in nvim-tree
+        local lib = require 'nvim-tree.lib'
+        local node = lib.get_node_at_cursor()
+        local folder_path = node.absolute_path or node.name
+
+        -- If the selected node is a file, use its parent directory
+        if not node.is_directory then
+          folder_path = vim.fn.fnamemodify(folder_path, ':h')
+        end
+
+        -- Open Telescope in the selected directory
+        require('telescope.builtin').find_files {
+          cwd = folder_path,
+        }
+      end
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sf', telescope_find_files_in_tree_directory, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -1130,9 +1146,8 @@ end, { desc = 'Toggle Maximizing a split' })
 ----------------------------------------------------------------
 local function open_workspace(root_folder)
   -- Set the Nvim Tree root folder
-  require('nvim-tree.api').tree.change_root(root_folder)
-
   vim.cmd 'NvimTreeOpen'
+  require('nvim-tree.api').tree.change_root(root_folder)
 end
 
 vim.keymap.set('n', '<space>wk', function()
