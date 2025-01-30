@@ -484,30 +484,33 @@ require('lazy').setup({
       pcall(require('telescope').load_extension, 'ui-select')
 
       local function telescope_grep_in_tree_directory()
-        -- Get the path of the current directory in nvim-tree
-        local lib = require 'nvim-tree.lib'
-        local node = lib.get_node_at_cursor()
+        local api = require 'nvim-tree.api'
+        local node = api.tree.get_node_under_cursor()
+
+        if not node then
+          print 'No node found under cursor'
+          return
+        end
+
         local folder_path = node.absolute_path or node.name
 
-        -- If the selected node is a file, use its parent directory
-        if not node.is_directory then
+        if not node.type == 'directory' then
           folder_path = vim.fn.fnamemodify(folder_path, ':h')
         end
 
-        -- Open Telescope in the selected directory
         require('telescope.builtin').live_grep {
           cwd = folder_path,
         }
-      end
-      -- See `:help telescope.builtin`
+      end -- See `:help telescope.builtin`
+
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', telescope_grep_in_tree_directory, { desc = '[S]earch by [g]rep' })
-      vim.keymap.set('n', '<leader>sG', builtin.live_grep, { desc = '[S]earch by [G]rep in whole project' })
+      vim.keymap.set('n', '<leader>sG', telescope_grep_in_tree_directory, { desc = '[S]earch by [G]rep' })
+      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [g]rep in whole project' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
@@ -1195,3 +1198,9 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
   pattern = '*.tpp',
   command = 'set filetype=cpp',
 })
+
+-- To have the command :Gd upstream/master to compare the current file with a specific branch
+vim.api.nvim_create_user_command('Gd', function(opts)
+  local branch = opts.args ~= '' and opts.args or 'upstream/master'
+  vim.cmd('DiffviewOpen ' .. branch)
+end, { nargs = '?' })
