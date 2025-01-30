@@ -234,4 +234,7 @@ return {
   {
     'sindrets/diffview.nvim',
   },
+  {
+    'onsails/lspkind.nvim',
+  },
 }
