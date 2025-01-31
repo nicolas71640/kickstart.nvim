@@ -6,6 +6,7 @@ return {
   {
     -- NOTE: To display the files tree
     'nvim-tree/nvim-tree.lua',
+    lazy = true,
     opts = {
       sort = {
         sorter = 'case_sensitive',
@@ -234,7 +235,33 @@ return {
   {
     'sindrets/diffview.nvim',
   },
+  -- To have icons in the dropdown menu of autocompletion
   {
     'onsails/lspkind.nvim',
+  },
+  {
+    'rmagatti/auto-session',
+    config = function()
+      require('auto-session').setup {
+        log_level = 'error',
+        auto_session_enable_last_session = true,
+        auto_session_enabled = true,
+        auto_save_enabled = true,
+        auto_restore_enabled = true,
+        pre_save_cmds = { 'NvimTreeClose' }, -- Close nvim-tree before saving
+      }
+
+      local function open_nvim_tree()
+        require('nvim-tree.api').tree.open()
+      end
+
+      vim.api.nvim_create_autocmd('VimEnter', {
+        callback = function()
+          if vim.fn.argc() == 0 then
+            open_nvim_tree()
+          end
+        end,
+      })
+    end,
   },
 }
