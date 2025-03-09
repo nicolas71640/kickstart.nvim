@@ -1,6 +1,6 @@
 --[[
 
-=====================================================================
+toky====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
 =====================================================================
 ========                                    .-----.          ========
@@ -123,6 +123,7 @@ vim.opt.termguicolors = true
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
+vim.opt.clipboard = 'unnamedplus'
 vim.schedule(function()
   vim.opt.clipboard = 'unnamedplus'
 end)
@@ -734,7 +735,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {},
+        --ts_ls = {},
         --
 
         lua_ls = {
@@ -977,7 +978,7 @@ require('lazy').setup({
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+    priority = 1000, -- Make sure to load this before  nill the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
@@ -987,6 +988,9 @@ require('lazy').setup({
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
     end,
+    opts = {
+      terminal_colors = true,
+    },
   },
 
   -- Highlight todo, notes, etc in comments
@@ -1229,3 +1233,59 @@ vim.api.nvim_create_user_command('Gd', function(opts)
   local branch = opts.args ~= '' and opts.args or 'upstream/master'
   vim.cmd('DiffviewOpen ' .. branch)
 end, { nargs = '?' })
+
+-- short cut to push notes
+vim.api.nvim_set_keymap('n', '<leader>np', ':lua GitCommitPush()<CR>', { noremap = true, silent = true, desc = '[n]otes [p]ush ' })
+
+function GitCommitPush()
+  local repo_name = 'Notes'
+
+  -- Get the current repo name
+  local handle = io.popen 'basename $(git rev-parse --show-toplevel) 2>/dev/null'
+  if handle == nil then
+    print '🚨 Not inside a Git repository!'
+    return
+  end
+
+  local current_repo = handle:read('*a'):gsub('\n', '')
+  handle:close()
+
+  if current_repo ~= repo_name then
+    print('❌ Wrong repository (' .. current_repo .. '), push aborted!')
+    return
+  end
+
+  local datetime = os.date '%Y-%m-%d %H:%M:%S'
+  local git_commands = {
+    { 'git', { 'add', '.' } },
+    { 'git', { 'commit', '-m', datetime } },
+    { 'git', { 'push' } },
+  }
+
+  print '⏳ Committing and pushing... Please wait.'
+
+  -- Function to execute Git commands asynchronously
+  local function run_git_cmd(index)
+    if index > #git_commands then
+      print '✅ Commit and push completed successfully! 🚀'
+      return
+    end
+
+    local cmd = git_commands[index][1]
+    local args = git_commands[index][2]
+
+    vim.loop.spawn(cmd, { args = args }, function(code, signal)
+      vim.schedule(function()
+        if code == 0 then
+          print('✅ Successfully executed: ' .. cmd .. ' ' .. table.concat(args, ' '))
+          run_git_cmd(index + 1) -- Run next command
+        else
+          print('❌ Error running: ' .. cmd .. ' ' .. table.concat(args, ' '))
+        end
+      end)
+    end)
+  end
+
+  -- Start execution
+  run_git_cmd(1)
+end

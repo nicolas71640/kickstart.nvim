@@ -144,52 +144,6 @@ return {
     version = '^1.0.0', -- optional: only update when a new 1.x version is released
   },
   {
-    'yetone/avante.nvim',
-    event = 'VeryLazy',
-    lazy = false,
-    version = false, -- set this if you want to always pull the latest change
-    opts = {
-      -- add any opts here
-    },
-    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-    build = 'make',
-    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
-    dependencies = {
-      'nvim-treesitter/nvim-treesitter',
-      'stevearc/dressing.nvim',
-      'nvim-lua/plenary.nvim',
-      'MunifTanjim/nui.nvim',
-      --- The below dependencies are optional,
-      'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
-      'zbirenbaum/copilot.lua', -- for providers='copilot'
-      {
-        -- support for image pasting
-        'HakonHarnes/img-clip.nvim',
-        event = 'VeryLazy',
-        opts = {
-          -- recommended settings
-          default = {
-            embed_image_as_base64 = false,
-            prompt_for_file_name = false,
-            drag_and_drop = {
-              insert_mode = true,
-            },
-            -- required for Windows users
-            use_absolute_path = true,
-          },
-        },
-      },
-      {
-        -- Make sure to set this up properly if you have lazy=true
-        'MeanderingProgrammer/render-markdown.nvim',
-        opts = {
-          file_types = { 'markdown', 'Avante' },
-        },
-        ft = { 'markdown', 'Avante' },
-      },
-    },
-  },
-  {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     init = function()
@@ -239,29 +193,70 @@ return {
   {
     'onsails/lspkind.nvim',
   },
+
   {
-    'rmagatti/auto-session',
-    config = function()
-      require('auto-session').setup {
-        log_level = 'error',
-        auto_session_enable_last_session = true,
-        auto_session_enabled = true,
-        auto_save_enabled = true,
-        auto_restore_enabled = true,
-        pre_save_cmds = { 'NvimTreeClose' }, -- Close nvim-tree before saving
-      }
-
-      local function open_nvim_tree()
-        require('nvim-tree.api').tree.open()
-      end
-
-      vim.api.nvim_create_autocmd('VimEnter', {
-        callback = function()
-          if vim.fn.argc() == 0 then
-            open_nvim_tree()
-          end
-        end,
-      })
-    end,
+    'tpope/vim-obsession',
   },
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {},
+  },
+  {
+    'folke/zen-mode.nvim',
+    setup = {
+      vim.api.nvim_set_keymap('n', '<leader>z', ':ZenMode<CR>', { noremap = true, silent = true }),
+    },
+    opts = {
+
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+      plugins = {
+        -- disable some global vim options (vim.o...)
+        -- comment the lines to not apply the options
+        options = {
+          enabled = true,
+          ruler = false, -- disables the ruler text in the cmd line area
+          showcmd = false, -- disables the command in the last line of the screen
+          -- you may turn on/off statusline in zen mode by setting 'laststatus'
+          -- statusline will be shown only if 'laststatus' == 3
+          laststatus = 0, -- turn off the statusline in zen mode
+        },
+        twilight = { enabled = true }, -- enable to start Twilight when zen mode opens
+        gitsigns = { enabled = false }, -- disables git signs
+        tmux = { enabled = true }, -- disables the tmux statusline
+      },
+    },
+  },
+
+  --  {
+  --    'rmagatti/auto-session',
+  --    config = function()
+  --      require('auto-session').setup {
+  --        log_level = 'error',
+  --        auto_session_enable_last_session = true,
+  --        auto_session_enabled = true,
+  --        auto_save_enabled = true,
+  --        auto_restore_enabled = true,
+  --        pre_save_cmds = { 'NvimTreeClose' }, -- Close nvim-tree before saving
+  --      }
+  --
+  --      local function open_nvim_tree()
+  --        require('nvim-tree.api').tree.open()
+  --      end
+  --
+  --      vim.api.nvim_create_autocmd('VimEnter', {
+  --        callback = function()
+  --          if vim.fn.argc() == 0 then
+  --            open_nvim_tree()
+  --          end
+  --        end,
+  --      })
+  --    end,
+  --  },
 }
