@@ -27,7 +27,25 @@ return {
       }
 
       local api = require 'nvim-tree.api'
+      local is_half = false
 
+      function ToggleNvimTreeSize()
+        local normal_width = 30 -- Taille standard
+        local half_width = math.floor(vim.o.columns / 2) -- La moitié de la fenêtre
+
+        if is_half then
+          api.tree.open { find_file = true, focus = true } -- S'assurer que NvimTree est ouvert
+          api.tree.resize { width = normal_width } -- Agrandir à la moitié de l'écran
+          --    api.tree.resize(normal_width) -- Revenir à la taille normale
+          is_half = false
+        else
+          api.tree.open { find_file = true, focus = true } -- S'assurer que NvimTree est ouvert
+          api.tree.resize { width = half_width } -- Agrandir à la moitié de l'écran
+          is_half = true
+        end
+      end
+
+      vim.keymap.set('n', '<leader>dr', ToggleNvimTreeSize, { noremap = true, silent = true, desc = '[d]rawer [r]esize' })
       vim.keymap.set('n', '<C-d>', api.tree.toggle, { desc = 'Toggle [D]rawer (tree)' })
       vim.keymap.set('n', '<C-f>', api.tree.find_file, { desc = '[F]ocus on current file in tree' })
     end,
