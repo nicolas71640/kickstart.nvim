@@ -46,7 +46,7 @@ return {
       end
 
       vim.keymap.set('n', '<leader>dr', ToggleNvimTreeSize, { noremap = true, silent = true, desc = '[d]rawer [r]esize' })
-      vim.keymap.set('n', '<C-d>', api.tree.toggle, { desc = 'Toggle [D]rawer (tree)' })
+      vim.keymap.set('n', '<C-t>', api.tree.toggle, { desc = 'Toggle [D]rawer (tree)' })
       vim.keymap.set('n', '<C-f>', api.tree.find_file, { desc = '[F]ocus on current file in tree' })
     end,
     dependencies = {
@@ -253,6 +253,35 @@ return {
     },
   },
 
+  {
+    'epwalsh/obsidian.nvim',
+    version = '*', -- recommended, use latest release instead of latest commit
+    lazy = true,
+    ft = 'markdown',
+    -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
+    -- event = {
+    --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
+    --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
+    --   -- refer to `:h file-pattern` for more examples
+    --   "BufReadPre path/to/my-vault/*.md",
+    --   "BufNewFile path/to/my-vault/*.md",
+    -- },
+    dependencies = {
+      -- Required.
+      'nvim-lua/plenary.nvim',
+
+      -- see below for full list of optional dependencies 👇
+    },
+    opts = {
+      workspaces = {
+        {
+          name = 'personal',
+          path = '~/Documents/Notes/',
+        },
+      },
+    },
+  },
+
   --  {
   --    'rmagatti/auto-session',
   --    config = function()
@@ -278,4 +307,9 @@ return {
   --      })
   --    end,
   --  },
+  --
+  {
+    'ThePrimeagen/vim-be-good',
+    cmd = 'VimBeGood',
+  },
 }

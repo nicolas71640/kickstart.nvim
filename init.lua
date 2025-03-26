@@ -107,7 +107,8 @@ vim.g.loaded_netrwPlugin = 1
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
+vim.opt.signcolumn = 'number'
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -1243,7 +1244,8 @@ end, { nargs = '?' })
 vim.api.nvim_set_keymap('n', '<leader>np', ':lua GitCommitPush()<CR>', { noremap = true, silent = true, desc = '[n]otes [p]ush ' })
 
 function GitCommitPush()
-  local repo_name = 'Notes'
+  local repo_perso = 'Perso'
+  local repo_work = 'Work'
 
   -- Get the current repo name
   local handle = io.popen 'basename $(git rev-parse --show-toplevel) 2>/dev/null'
@@ -1255,7 +1257,7 @@ function GitCommitPush()
   local current_repo = handle:read('*a'):gsub('\n', '')
   handle:close()
 
-  if current_repo ~= repo_name then
+  if current_repo ~= repo_perso and current_repo ~= repo_work then
     print('❌ Wrong repository (' .. current_repo .. '), push aborted!')
     return
   end
